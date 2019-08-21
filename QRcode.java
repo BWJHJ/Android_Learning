@@ -26,12 +26,12 @@ public class QRcode {
     public static Mat get(Mat src) {
 
         //筛选方框轮廓大小
-        int Max_size = 150;
+        int Max_size = 200;
         int Min_size = 50;
         //闭运算核大小
-        int Element_size =10;
+        int Element_size =3;
         //二值化阈值
-        int bin_threshold = 100;
+        int bin_threshold = 120;
         //canny函数的两个参数
         int canny_min =200;
         int canny_max = 300;
@@ -41,14 +41,15 @@ public class QRcode {
         Mat img_img = img_src.clone();
         Imgproc.pyrDown(img_src, img_src);
         Imgproc.pyrDown(img_src, img_src);
+        Imgproc.pyrDown(img_src, img_src);
         Mat img_bin = new Mat();
         Mat img_canny = new Mat();
 
         Imgproc.cvtColor(img_src, img_bin, Imgproc.COLOR_BGR2GRAY);
-        Imgproc.equalizeHist(img_bin, img_bin);
+//        Imgproc.equalizeHist(img_bin, img_bin);
         Imgproc.threshold(img_bin, img_bin, bin_threshold, 255, Imgproc.THRESH_BINARY);
         Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(Element_size, Element_size));
-        Imgproc.morphologyEx(img_bin, img_canny, Imgproc.MORPH_CLOSE, element);
+        Imgproc.morphologyEx(img_bin, img_canny, Imgproc.MORPH_CLOSE, element,new Point(-1,-1),3);
         Imgproc.Canny(img_canny, img_canny, canny_min, canny_max);
 
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
@@ -62,7 +63,7 @@ public class QRcode {
             double w = rotRect.size.width;
             double h = rotRect.size.height;
 
-            if (w > Max_size || h > Max_size || w < Min_size || h < Min_size || Math.abs(w - h) > 10)
+            if (w > Max_size || h > Max_size || w < Min_size || h < Min_size || Math.abs(w - h) > 20)
                 continue;
             rotRect.points(rect);
             break;
@@ -87,26 +88,26 @@ public class QRcode {
         }
 
         if (rect[0].y < rect[1].y) {
-            srcPoints.put(0, 0, rect[0].x*4);
-            srcPoints.put(0, 1, rect[0].y*4);
-            srcPoints.put(1, 0, rect[1].x*4);
-            srcPoints.put(1, 1, rect[1].y*4);
+            srcPoints.put(0, 0, rect[0].x*8);
+            srcPoints.put(0, 1, rect[0].y*8);
+            srcPoints.put(1, 0, rect[1].x*8);
+            srcPoints.put(1, 1, rect[1].y*8);
         } else {
-            srcPoints.put(0, 0, rect[1].x*4);
-            srcPoints.put(0, 1, rect[1].y*4);
-            srcPoints.put(1, 0, rect[0].x*4);
-            srcPoints.put(1, 1, rect[0].y*4);
+            srcPoints.put(0, 0, rect[1].x*8);
+            srcPoints.put(0, 1, rect[1].y*8);
+            srcPoints.put(1, 0, rect[0].x*8);
+            srcPoints.put(1, 1, rect[0].y*8);
         }
         if (rect[2].y > rect[3].y) {
-            srcPoints.put(2, 0, rect[2].x*4);
-            srcPoints.put(2, 1, rect[2].y*4);
-            srcPoints.put(3, 0, rect[3].x*4);
-            srcPoints.put(3, 1, rect[3].y*4);
+            srcPoints.put(2, 0, rect[2].x*8);
+            srcPoints.put(2, 1, rect[2].y*8);
+            srcPoints.put(3, 0, rect[3].x*8);
+            srcPoints.put(3, 1, rect[3].y*8);
         } else {
-            srcPoints.put(2, 0, rect[3].x*4);
-            srcPoints.put(2, 1, rect[3].y*4);
-            srcPoints.put(3, 0, rect[2].x*4);
-            srcPoints.put(3, 1, rect[2].y*4);
+            srcPoints.put(2, 0, rect[3].x*8);
+            srcPoints.put(2, 1, rect[3].y*8);
+            srcPoints.put(3, 0, rect[2].x*8);
+            srcPoints.put(3, 1, rect[2].y*8);
         }
         dstPoints.put(0, 0, 0);
         dstPoints.put(0, 1, 0);
@@ -122,7 +123,7 @@ public class QRcode {
         Imgproc.warpPerspective(img_img, dst, transMat, dst.size());
         Imgproc.cvtColor(dst, dst, Imgproc.COLOR_BGR2GRAY);
         Imgproc.equalizeHist(dst, dst);
-        Imgproc.threshold(dst, dst, 160, 255, Imgproc.THRESH_BINARY);
+        Imgproc.threshold(dst, dst, 130, 255, Imgproc.THRESH_BINARY);
 
         return dst;
     }
@@ -192,7 +193,7 @@ public class QRcode {
             Rect boundRect = new Rect();
             boundRect = Imgproc.boundingRect(contours.get(parentIdx));
 
-            if(boundRect.height  > 300 || boundRect.width > 300 || boundRect.height  < 200 || boundRect.width < 200 || Math.abs(boundRect.height  - boundRect.width) > 15)
+            if(boundRect.height  > 300 || boundRect.width > 300 || boundRect.height  < 200 || boundRect.width < 200 || Math.abs(boundRect.height  - boundRect.width) > 40)
                 continue;
 
             Imgproc.rectangle(img,new Point(boundRect.x,boundRect.y),new Point(boundRect.x+boundRect.width,boundRect.y+boundRect.height), new Scalar(0,255,0),2);
